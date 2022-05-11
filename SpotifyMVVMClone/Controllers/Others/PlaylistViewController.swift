@@ -8,35 +8,46 @@
 import UIKit
 
 class PlaylistViewController: UIViewController {
+   
+    
+    
+    
     
     private let playlist : Playlist
     
     private let collectionView = UICollectionView(
-        frame: .zero,
-        collectionViewLayout: UICollectionViewCompositionalLayout(sectionProvider: { _, _ -> NSCollectionLayoutSection? in
-            let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1.0),
-                heightDimension: .fractionalHeight(1.0))
-            )
-            
-            item.contentInsets = NSDirectionalEdgeInsets(top: 1, leading: 2, bottom: 1, trailing: 2)
-            
-            
-            let group = NSCollectionLayoutGroup.vertical(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),                                                                                        heightDimension: .absolute(40)),
-                                                         subitem: item,
-                                                         count: 1)
-            
-            let section = NSCollectionLayoutSection(group: group)
-            section.boundarySupplementaryItems = [
-                NSCollectionLayoutBoundarySupplementaryItem(layoutSize: NSCollectionLayoutSize(
-                    widthDimension: .fractionalWidth(1),
-                    heightDimension: .fractionalHeight(1)),
-                    elementKind: UICollectionView.elementKindSectionHeader,
-                    alignment: .top)
-            ]
-            return section
-        })
-    )
+            frame: .zero,
+            collectionViewLayout: UICollectionViewCompositionalLayout(sectionProvider: { _, _ -> NSCollectionLayoutSection? in
+                let item = NSCollectionLayoutItem(
+                    layoutSize: NSCollectionLayoutSize(
+                        widthDimension: .fractionalWidth(1.0),
+                        heightDimension: .fractionalHeight(1.0)
+                    )
+                )
+
+                item.contentInsets = NSDirectionalEdgeInsets(top: 1, leading: 2, bottom: 1, trailing: 2)
+
+                let group = NSCollectionLayoutGroup.vertical(
+                    layoutSize: NSCollectionLayoutSize(
+                        widthDimension: .fractionalWidth(1),
+                        heightDimension: .absolute(60)
+                    ),
+                    subitem: item,
+                    count: 1
+                )
+
+                let section = NSCollectionLayoutSection(group: group)
+                section.boundarySupplementaryItems = [
+                    NSCollectionLayoutBoundarySupplementaryItem(
+                        layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
+                                                           heightDimension: .fractionalWidth(1)),
+                        elementKind: UICollectionView.elementKindSectionHeader,
+                        alignment: .top
+                    )
+                ]
+                return section
+            })
+        )
     
     init(playlist: Playlist){
         self.playlist = playlist
@@ -85,8 +96,18 @@ class PlaylistViewController: UIViewController {
                 }
             }
         }
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(didTapShare))
     }
     
+    @objc private func didTapShare() {
+        guard let url = URL(string: playlist.external_urls["spotify"] as? String ?? "") else {return}
+        
+        let vc = UIActivityViewController(activityItems: [url], applicationActivities: [])
+        vc.popoverPresentationController?.barButtonItem = navigationItem.rightBarButtonItem
+        present(vc, animated: true)
+        
+    }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -106,6 +127,7 @@ extension PlaylistViewController: UICollectionViewDelegate, UICollectionViewData
         }
         
         cell.configure(with: viewModels[indexPath.row])
+        
         return cell
     }
     
@@ -132,9 +154,20 @@ extension PlaylistViewController: UICollectionViewDelegate, UICollectionViewData
                                                       artworkURL: URL(string: playlist.images.first?.url ?? ""))
         
         header.configure(with: headerViewModel)
-        
+        header.delegate = self
         return header
     }
     
     
 }
+
+extension PlaylistViewController: PlaylistHeaderCollectionReusableViewDelegate {
+    func playlistHeaderCollectionReusableViewDidTapPlayAll(_ header: PlaylistHeaderCollectionReusableView) {
+        print("All played")
+    }
+    
+    
+}
+
+
+

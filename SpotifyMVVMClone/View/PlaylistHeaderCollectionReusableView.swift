@@ -8,8 +8,14 @@
 import SDWebImage
 import UIKit
 
+protocol PlaylistHeaderCollectionReusableViewDelegate: AnyObject {
+    func playlistHeaderCollectionReusableViewDidTapPlayAll(_ header: PlaylistHeaderCollectionReusableView)
+}
+
 final class PlaylistHeaderCollectionReusableView: UICollectionReusableView {
         static let identifier = "PlaylistHeaderCollectionReusableView"
+    
+    weak var delegate: PlaylistHeaderCollectionReusableViewDelegate?
     
     private let nameLabel: UILabel = {
         let label = UILabel()
@@ -18,6 +24,8 @@ final class PlaylistHeaderCollectionReusableView: UICollectionReusableView {
     }()
     private let descriptionLabel: UILabel = {
         let label = UILabel()
+        label.textColor = .secondaryLabel
+        label.numberOfLines = 0
         label.font = .systemFont(ofSize: 18, weight: .regular)
         return label
     }()
@@ -34,6 +42,18 @@ final class PlaylistHeaderCollectionReusableView: UICollectionReusableView {
         return imageView
     }()
     
+    private let playAllButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = .systemGreen
+        let image = UIImage(systemName: "play.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .regular))
+        button.setImage(image, for: .normal)
+        button.tintColor = .white
+        button.layer.cornerRadius = 25
+        button.layer.masksToBounds = true
+        return button
+    }()
+    
+    
      //MARK: - init
     
     override init(frame: CGRect) {
@@ -43,19 +63,26 @@ final class PlaylistHeaderCollectionReusableView: UICollectionReusableView {
         addSubview(ownerLabel)
         addSubview(nameLabel)
         addSubview(descriptionLabel)
+        addSubview(playAllButton)
+        playAllButton.addTarget(self, action: #selector(didTapPlayAll), for: .touchUpInside)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    @objc private func didTapPlayAll() {
+        delegate?.playlistHeaderCollectionReusableViewDidTapPlayAll(self)
+    }
+    
     override func layoutSubviews() {
         super.layoutSubviews()
-        let imageSize : CGFloat = height/2
-        imageview.frame = CGRect(x: (width-imageSize), y: 20, width: imageSize, height: imageSize)
+        let imageSize : CGFloat = height/1.8
+        imageview.frame = CGRect(x: (width-imageSize)/2, y: 20, width: imageSize, height: imageSize)
         nameLabel.frame = CGRect(x: 10, y: imageview.bottom, width: width-20, height: 44)
         descriptionLabel.frame = CGRect(x: 10, y: nameLabel.bottom, width: width-20, height: 44)
         ownerLabel.frame = CGRect(x: 10, y: descriptionLabel.bottom, width: width-20, height: 44)
+        playAllButton.frame = CGRect(x: width-70, y: height-70, width: 60, height: 60)
     }
     
     
